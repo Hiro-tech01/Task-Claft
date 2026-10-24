@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ブロッククエスト</title>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:#1b2a1b;background-image:linear-gradient(#6ec6ff 0 22%,#1b2a1b 22%);color:#fff;font-family:'DotGothic16',ui-monospace,'Hiragino Kaku Gothic ProN',sans-serif;min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:12px}
+h1{font-size:22px;margin:4px 0 10px;text-shadow:2px 2px #000;text-align:center}
+.card{background:#3b3b3b;border:4px solid #000;box-shadow:inset 3px 3px #6b6b6b,inset -3px -3px #202020;padding:10px;margin-bottom:12px}
+.lv{display:flex;justify-content:space-between;font-size:15px;margin-bottom:6px}
+.bar{height:16px;background:#111;border:2px solid #000}
+.bar i{display:block;height:100%;background:#7fff3a;box-shadow:inset 0 3px #b6ff8a;width:0;transition:width .4s}
+.inv{display:flex;gap:6px;justify-content:space-between;margin-top:10px}
+.inv div{flex:1;background:#8b8b8b;border:2px solid #000;text-align:center;padding:4px 0;font-size:12px;box-shadow:inset 2px 2px #c6c6c6,inset -2px -2px #555;color:#000}
+.inv b{display:block;font-size:18px}
+.add{display:flex;gap:6px}
+.add input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;background:#111;color:#fff;border:3px solid #000}
+button{font:inherit;cursor:pointer}
+.add button{background:#5dba2f;color:#fff;border:3px solid #000;box-shadow:inset 2px 2px #8df05a,inset -2px -2px #2f7a10;padding:0 14px;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chips button{background:#555;color:#fff;border:2px solid #000;padding:5px 8px;font-size:13px}
+.blk{position:relative;height:84px;margin-bottom:10px;border:4px solid #000;display:flex;align-items:center;justify-content:center;font-size:20px;text-shadow:2px 2px #000;cursor:pointer;overflow:hidden;
+ background-size:16px 16px;box-shadow:inset 4px 4px rgba(255,255,255,.25),inset -4px -4px rgba(0,0,0,.35);transition:transform .08s}
+.blk:active{transform:scale(.97)}
+.t0{background-color:#7a5230;background-image:linear-gradient(90deg,rgba(0,0,0,.18) 50%,transparent 50%),linear-gradient(rgba(0,0,0,.12) 50%,transparent 50%);border-top:12px solid #4fa82a}
+.t1{background-color:#8a8a8a;background-image:linear-gradient(90deg,rgba(0,0,0,.2) 50%,transparent 50%),linear-gradient(rgba(255,255,255,.12) 50%,transparent 50%)}
+.t2{background-color:#8a8a8a;background-image:radial-gradient(#e8b27a 28%,transparent 30%),linear-gradient(90deg,rgba(0,0,0,.18) 50%,transparent 50%)}
+.t3{background-color:#6b6b6b;background-image:radial-gradient(#4df0e6 28%,transparent 30%),linear-gradient(90deg,rgba(0,0,0,.18) 50%,transparent 50%)}
+.blk::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:repeating-linear-gradient(60deg,transparent 0 14px,#000 14px 16px),repeating-linear-gradient(-30deg,transparent 0 22px,#000 22px 24px)}
+.blk[data-h="1"]::after{opacity:.3}.blk[data-h="2"]::after{opacity:.65}
+.blk[data-h="1"]{animation:sh .15s}.blk[data-h="2"]{animation:sh .15s}
+@keyframes sh{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.blk.pop{animation:pop .25s forwards}@keyframes pop{to{transform:scale(1.25);opacity:0}}
+.blk span{padding:0 40px;text-align:center;word-break:break-all;line-height:1.2;z-index:1}
+.del{position:absolute;right:4px;top:4px;z-index:2;background:rgba(0,0,0,.5);color:#fff;border:0;font-size:14px;padding:2px 6px}
+.sub{display:flex;align-items:center;gap:10px;margin:-4px 0 8px 16px;padding:10px;background:#2c2c2c;border:3px solid #000;font-size:16px;cursor:pointer;box-shadow:inset 2px 2px #555}
+.sub.d{opacity:.55;text-decoration:line-through;background:#2f4a2a}
+.sub i{width:24px;height:24px;flex:none;background:#111;border:2px solid #000;text-align:center;line-height:20px;font-style:normal;color:#7fff3a}
+.blk.lock{filter:grayscale(.7) brightness(.75)}
+.blk.rdy{box-shadow:0 0 18px #ffd93a,inset 4px 4px rgba(255,255,255,.25),inset -4px -4px rgba(0,0,0,.35)}
+.chips .all{background:#5dba2f;width:100%;padding:8px;font-size:15px}
+.rc{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px;margin-top:8px;background:#2c2c2c;border:3px solid #000;font-size:15px}
+.rc small{display:block;font-size:12px;color:#bbb;margin-top:2px}
+.rc.eq{border-color:#ffd93a}
+.rc button{background:#5dba2f;color:#fff;border:3px solid #000;padding:8px;font-size:13px;flex:none}
+.rc button:disabled{background:#555;color:#999}
+.bossbtn{width:100%;margin-bottom:12px;padding:16px;font-size:18px;background:#b3261e;color:#fff;border:4px solid #000;box-shadow:inset 3px 3px #ff7a70,inset -3px -3px #6b120d;animation:pulse 1s infinite alternate}@keyframes pulse{to{transform:scale(1.03)}}
+#bt{position:fixed;inset:0;z-index:70;background:rgba(10,10,20,.96);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));text-align:center;font-size:18px}
+#bimg{font-size:110px;line-height:1}#bimg.hurt{animation:sh .2s}
+.bhp{width:80%;max-width:360px;height:20px;background:#111;border:3px solid #000}.bhp i{display:block;height:100%;background:#e33;width:100%;transition:width .2s}
+#batk{font:inherit;font-size:24px;padding:18px 34px;background:#5dba2f;color:#fff;border:4px solid #000;box-shadow:inset 3px 3px #8df05a,inset -3px -3px #2f7a10}
+.b2{font:inherit;font-size:16px;padding:10px 16px;background:#555;color:#fff;border:3px solid #000;margin:4px}
+.hint{text-align:center;font-size:13px;color:#cfe;margin:14px 0}
+.p{position:fixed;width:10px;height:10px;pointer-events:none;z-index:50;animation:fly .7s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--x),var(--y)) rotate(180deg);opacity:0}}
+#toast{position:fixed;left:50%;top:30%;transform:translateX(-50%) scale(0);background:#222;border:4px solid #ffd93a;color:#ffd93a;padding:16px 20px;font-size:22px;text-align:center;z-index:60;transition:transform .25s;text-shadow:2px 2px #000;max-width:90%}
+#toast.on{transform:translateX(-50%) scale(1)}
+</style></head><body>
+<div class="wrap">
+<h1>⛏️ ブロッククエスト</h1>
+<div class="card">
+ <div class="lv"><span id="rank"></span><span id="lv"></span></div>
+ <div class="bar"><i id="xp"></i></div>
+ <div class="inv" id="inv"></div>
+</div>
+<div class="card">
+ <div class="add"><input id="in" placeholder="あたらしいクエスト" maxlength="20"><button id="ad">＋</button></div>
+ <div class="chips" id="ch"></div>
+</div>
+<div id="list"></div>
+<div class="hint" id="hint"></div>
+<div id="boss"></div><div class="card" id="craft"></div>
+</div>
+<div id="toast"></div><div id="bt"></div>
+<script>
+const ITEMS=[['dirt','🟫','つち',40,'#7a5230'],['stone','🪨','いし',28,'#999'],['iron','⛓️','てつ',18,'#ddd'],['gold','🪙','きん',10,'#ffd93a'],['dia','💎','ダイヤ',4,'#4df0e6']];
+const RANKS=['はじめてのたびびと','きこり','つるはしマスター','てつのせんし','きんのぼうけんか','ダイヤのたつじん','でんせつのゆうしゃ'];
+const PRESETS=[{t:'公文のしゅくだい(算数)'},{t:'公文のしゅくだい(国語)'},{t:'学校のしゅくだい'},{t:'学校のじゅんび',sub:['ランチョンマット','みてねGPSじゅうでん','iPadじゅうでん','ふでばこチェック']}];
+const XP_PER=10,LV_XP=50;
+let S={tasks:[],inv:{},xp:0,n:0,seq:1};
+try{const d=JSON.parse(localStorage.getItem('bq'));if(d)S=d}catch(e){}
+S.wp=S.wp||[];S.bk=S.bk||0;
+const hits={};
+const $=id=>document.getElementById(id);
+const save=()=>{try{localStorage.setItem('bq',JSON.stringify(S))}catch(e){}};
+let ac;
+function beep(f,d=0.08,t='square'){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.value=.08;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+function toast(m,ms=1600){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
+function burst(x,y,col,n=10){for(let i=0;i<n;i++){const p=document.createElement('div');p.className='p';p.style.background=col;p.style.left=x+'px';p.style.top=y+'px';p.style.setProperty('--x',(Math.random()*160-80)+'px');p.style.setProperty('--y',(Math.random()*160-60)+'px');document.body.appendChild(p);setTimeout(()=>p.remove(),750)}}
+function drop(){let r=Math.random()*100,a=0;for(const it of ITEMS){a+=it[3];if(r<a)return it}return ITEMS[0]}
+function render(){
+ const lv=Math.floor(S.xp/LV_XP)+1;
+ $('lv').textContent='Lv.'+lv;
+ $('rank').textContent=RANKS[Math.min(lv-1,RANKS.length-1)];
+ $('xp').style.width=((S.xp%LV_XP)/LV_XP*100)+'%';
+ $('inv').innerHTML=ITEMS.map(i=>`<div>${i[1]}<b>${S.inv[i[0]]||0}</b>${i[2]}</div>`).join('');
+ const L=$('list');L.innerHTML='';
+ S.tasks.forEach((t,i)=>{
+  const n=t.sub?t.sub.length:0,open=n?t.sub.filter(u=>!u.d).length:0;
+  const b=document.createElement('div');b.className='blk t'+(t.id%4)+(open?' lock':n?' rdy':'');b.dataset.h=hits[t.id]||0;
+  const s=document.createElement('span');s.textContent=(open?'🔒 ':n?'✨ ':'')+t.t+(n?' ('+(n-open)+'/'+n+')':'');b.appendChild(s);
+  const x=document.createElement('button');x.className='del';x.textContent='✕';
+  x.onclick=e=>{e.stopPropagation();S.tasks=S.tasks.filter(k=>k.id!==t.id);save();render()};
+  b.appendChild(x);
+  b.onclick=e=>open?(beep(150,.1),toast('したのクエストを さきに やろう！',1200)):hit(e,t,b);
+  L.appendChild(b);
+  (t.sub||[]).forEach(u=>{const d=document.createElement('div');d.className='sub'+(u.d?' d':'');const c=document.createElement('i');c.textContent=u.d?'✔':'';const p=document.createElement('span');p.textContent=u.t;d.append(c,p);d.onclick=e=>subTap(e,t,u);L.appendChild(d)})});
+ renderCraft();renderBoss();
+ $('hint').textContent=S.tasks.length?'ブロックを3かい タップして こわそう！':'クエストをついかして ぼうけんスタート！　（これまでに '+S.n+' こ クリア）';
+}
+function gain(it,n=1){S.inv[it[0]]=(S.inv[it[0]]||0)+n}
+function hit(e,t,b){
+ const h=(hits[t.id]||0)+1;hits[t.id]=h;
+ const cx=e.clientX||innerWidth/2,cy=e.clientY||innerHeight/2;
+ if(h<3){b.dataset.h=h;beep(180+h*60);burst(cx,cy,'#8a8a8a',6);return}
+ beep(520,.1);setTimeout(()=>beep(780,.15),90);
+ burst(cx,cy,'#ffd93a',14);b.classList.add('pop');
+ const old=Math.floor(S.xp/LV_XP);
+ const it=drop();gain(it);S.xp+=XP_PER;S.n++;
+ S.tasks=S.tasks.filter(k=>k.id!==t.id);delete hits[t.id];
+ let msg=it[1]+' '+it[2]+' ゲット！ +'+XP_PER+'XP';
+ let ms=1300;
+ if(!S.tasks.length){S.br=true;const b1=drop(),b2=drop();gain(b1);gain(b2);S.xp+=20;msg='🎉 クエストクリア！\n'+b1[1]+b2[1]+' ボーナスたから +20XP\n👹 ボスが あらわれた！';ms=2800;[660,880,1100].forEach((f,i)=>setTimeout(()=>beep(f,.2,'triangle'),i*140))}
+ if(Math.floor(S.xp/LV_XP)>old){msg+='\n⬆️ レベルアップ！';ms=2600;burst(innerWidth/2,innerHeight/3,'#7fff3a',30)}
+ toast(msg,ms);$('toast').style.whiteSpace='pre-line';
+ save();setTimeout(render,230);
+}
+function add(txt){txt=(txt||$('in').value).trim();if(!txt)return;S.tasks.push({id:S.seq++,t:txt});$('in').value='';beep(300,.06);save();render()}
+function addPreset(p){if(S.tasks.some(k=>k.t===p.t)){beep(150,.1);return}S.tasks.push({id:S.seq++,t:p.t,sub:p.sub&&p.sub.map(x=>({t:x,d:false}))});beep(300,.06);save();render()}
+function subTap(e,t,u){if(u.d)return;u.d=true;const old=Math.floor(S.xp/LV_XP);S.xp+=2;beep(660,.08);burst(e.clientX,e.clientY,'#7fff3a',8);
+ let m='✔ +2XP';if(t.sub.every(x=>x.d)){m='🔓 ブロックがひかった！\nこわしてみよう！';[660,880].forEach((f,i)=>setTimeout(()=>beep(f,.15,'triangle'),i*120))}
+ if(Math.floor(S.xp/LV_XP)>old)m+='\n⬆️ レベルアップ！';
+ toast(m,1300);$('toast').style.whiteSpace='pre-line';save();render()}
+$('ad').onclick=()=>add();
+$('in').onkeydown=e=>{if(e.key==='Enter')add()};
+{const a=document.createElement('button');a.className='all';a.textContent='📋 きょうのクエストを ぜんぶセット';a.onclick=()=>PRESETS.forEach(addPreset);$('ch').appendChild(a)}
+PRESETS.forEach(p=>{const b=document.createElement('button');b.textContent=p.t;b.onclick=()=>addPreset(p);$('ch').appendChild(b)});
+const WPS=[{id:'w0',n:'つちのけん',e:'🪵',a:1,c:{dirt:5}},{id:'w1',n:'いしのけん',e:'🗡️',a:2,c:{stone:3}},{id:'w2',n:'てつのけん',e:'⚔️',a:4,c:{iron:3,stone:2}},{id:'w3',n:'きんのけん',e:'🔱',a:6,c:{gold:3,iron:2}},{id:'w4',n:'ダイヤのけん',e:'💎',a:10,c:{dia:2,gold:2}}];
+const BOSS=[['🧟','ゾンビ'],['💀','スケルトン'],['🕷️','クモ'],['🟩','クリーパー'],['🕴️','エンダーマン'],['☠️','ウィザー'],['🐉','エンダードラゴン']];
+let G=null;
+function renderCraft(){const e=$('craft');e.innerHTML='<div class="lv"><span>🔨 ぶきこうぼう</span></div>';
+ WPS.forEach(w=>{const own=S.wp.includes(w.id),can=Object.keys(w.c).every(k=>(S.inv[k]||0)>=w.c[k]);
+  const r=document.createElement('div');r.className='rc'+(S.eq===w.id?' eq':'');
+  const cost=Object.keys(w.c).map(k=>ITEMS.find(i=>i[0]===k)[1]+'×'+w.c[k]).join(' ');
+  r.innerHTML='<div>'+w.e+' '+w.n+'<small>こうげき '+w.a+'<br>'+cost+'</small></div>';
+  const b=document.createElement('button');
+  if(own){b.textContent=S.eq===w.id?'そうびちゅう':'そうびする';b.onclick=()=>{S.eq=w.id;beep(500,.06);save();render()}}
+  else{b.textContent=can?'つくる！':'ざいりょうが たりない';b.disabled=!can;b.onclick=()=>{Object.keys(w.c).forEach(k=>S.inv[k]-=w.c[k]);S.wp.push(w.id);S.eq=w.id;[500,700,900].forEach((f,i)=>setTimeout(()=>beep(f,.12,'triangle'),i*90));burst(innerWidth/2,innerHeight/2,'#ffd93a',20);toast(w.e+' '+w.n+' が できた！');save();render()}}
+  r.appendChild(b);e.appendChild(r)})}
+function renderBoss(){const e=$('boss');e.innerHTML='';if(!S.br)return;const B=BOSS[S.bk%BOSS.length],b=document.createElement('button');b.className='bossbtn';b.textContent=B[0]+' ボスバトルへ！ '+B[1]+'が あらわれた！';b.onclick=startBattle;e.appendChild(b)}
+function startBattle(){const B=BOSS[S.bk%BOSS.length],w=WPS.find(x=>x.id===S.eq),m=20+8*S.bk;
+ G={hp:m,max:m,h:5,t:0,B,a:w?w.a:1};
+ const o=$('bt');o.style.display='flex';
+ o.innerHTML='<div>⚔️ ボスバトル！</div><div id="bimg">'+B[0]+'</div><div>'+B[1]+'</div><div class="bhp"><i id="bhp"></i></div><div id="hearts"></div><div id="dmg" style="min-height:26px"></div><div>'+(w?w.e+' '+w.n:'👊 すで')+'（こうげき '+G.a+'）</div><button id="batk">⚔️ こうげき！</button><div id="bmsg"></div><button class="b2" id="bx">にげる</button>';
+ $('batk').onclick=atk;$('bx').onclick=()=>{o.style.display='none';G=null;render()};upd()}
+function upd(){$('bhp').style.width=G.hp/G.max*100+'%';$('hearts').textContent='❤️'.repeat(G.h)+'🖤'.repeat(5-G.h)}
+function atk(e){if(!G||G.h<=0||G.hp<=0)return;G.t++;const c=Math.random()<.2,d=G.a*(c?2:1);G.hp=Math.max(0,G.hp-d);
+ beep(c?880:300,.08,'sawtooth');burst(e.clientX,e.clientY,c?'#ffd93a':'#f55',8);
+ const im=$('bimg');im.classList.remove('hurt');void im.offsetWidth;im.classList.add('hurt');
+ $('dmg').textContent=(c?'💥クリティカル！ ':'')+d+' ダメージ';
+ if(G.hp<=0){upd();return win()}
+ if(G.t%4==0){G.h--;beep(120,.2,'sawtooth');if(G.h<=0){upd();return lose()}}
+ upd()}
+function win(){const ds=[drop(),drop(),drop()];ds.forEach(d=>gain(d));const old=Math.floor(S.xp/LV_XP);S.xp+=30;S.bk++;S.br=false;save();
+ $('batk').style.display='none';$('bimg').textContent='💨';[660,880,1100,1320].forEach((f,i)=>setTimeout(()=>beep(f,.15,'triangle'),i*130));burst(innerWidth/2,innerHeight/3,'#ffd93a',30);
+ $('bmsg').innerHTML='🎉 '+G.B[1]+'を たおした！<br>'+ds.map(d=>d[1]).join(' ')+' ＋30XP'+(Math.floor(S.xp/LV_XP)>old?'<br>⬆️ レベルアップ！':'');$('bx').textContent='もどる'}
+function lose(){$('batk').style.display='none';beep(100,.4,'sawtooth');
+ $('bmsg').innerHTML='やられた…<br>ぶきを つよくして また ちょうせんしよう！<br><button class="b2" onclick="startBattle()">もういちど</button>';$('bx').textContent='もどる'}
+render();
+</script></body></html>
+
