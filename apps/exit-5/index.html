@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14242a">
+<meta name="description" content="通路を観察して、異変を見つけよう。５番出口を目指すミニゲーム。">
+<title>５番出口</title>
+<style>
+:root{color-scheme:dark;--ink:#091115;--panel:#24343a;--edge:#080d10;--gold:#ffdc73;--mint:#b8f0d4;--paper:#e9e0c7}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#415359 0,#192a30 46%,#101b20 100%);color:#fff;font-family:"DotGothic16","Courier New",ui-monospace,monospace}
+button{font:inherit;touch-action:manipulation}
+.shell{width:min(100%,760px);margin:auto;padding:16px 14px 30px}
+header{text-align:center;padding:5px 0 14px}
+.kicker{margin:0 0 5px;color:var(--mint);font-size:12px;letter-spacing:.12em}
+h1{margin:0;color:#fff1b9;font-size:clamp(30px,8vw,48px);line-height:1.15;text-shadow:3px 4px #000,0 0 22px #ffd77355}
+.subtitle{margin:8px 0 0;font-size:13px;color:#d5e0dc}
+.hud{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px;margin-bottom:10px}
+.hudbox{background:#17252a;border:3px solid var(--edge);box-shadow:inset 2px 2px #516168,inset -2px -2px #0c1417;text-align:center;padding:7px 4px}
+.hudbox small{display:block;font-size:11px;color:#bfd2ca}
+.hudbox strong{display:block;margin-top:2px;color:var(--gold);font-size:19px}
+.dots{display:flex;justify-content:center;gap:6px;padding:8px 0 3px}
+.dot{width:13px;height:13px;border:2px solid #070c0e;background:#526064;transform:rotate(45deg)}
+.dot.on{background:#ffdf75;box-shadow:0 0 9px #ffdf75}
+.panel{background:var(--panel);border:4px solid var(--edge);box-shadow:inset 3px 3px #526269,inset -3px -3px #152126;padding:10px;margin-bottom:10px}
+.rules{display:flex;align-items:center;gap:10px}
+.rule-mark{flex:none;width:38px;height:38px;border:3px solid #080d10;background:#344a4d;display:grid;place-items:center;color:var(--gold);font-size:22px}
+.rules p{margin:0;font-size:13px;line-height:1.65;color:#e7eee9}
+.rules b{color:#ffe589}
+.scene-wrap{position:relative;overflow:hidden;background:#152328;border:4px solid #080d10;box-shadow:inset 0 0 0 2px #475456}
+svg{display:block;width:100%;height:auto;min-height:230px}
+.scene-glow{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#c9e1dd08,transparent 45%,#0710131c)}
+.scene-label{position:absolute;left:9px;top:8px;background:#10191dcc;border:2px solid #05090a;padding:4px 7px;color:#d6e5df;font-size:11px}
+.message{min-height:42px;display:flex;align-items:center;justify-content:center;text-align:center;padding:7px 4px;color:var(--mint);font-size:13px;line-height:1.5}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{min-height:62px;padding:10px;border:4px solid #080d10;box-shadow:inset 3px 3px #ffffff45,inset -3px -3px #0005;color:#fff;font-size:19px;cursor:pointer;transition:transform .08s,filter .12s}
+.choice:active{transform:translateY(2px);filter:brightness(.9)}
+.choice:focus-visible,.start:focus-visible,.again:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.forward{background:#397b50}.back{background:#455a70}
+.choice span{display:block;font-size:11px;color:#e5eee8}
+.footer{text-align:center;color:#afc2ba;font-size:11px;margin-top:12px}
+.cover{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:18px;background:#091316dc}
+.cover[hidden]{display:none}
+.dialog{width:min(100%,470px);padding:20px 16px 18px;text-align:center;background:#25373c;border:4px solid #070c0e;box-shadow:inset 3px 3px #53686d,inset -3px -3px #101a1d,0 14px 50px #0009}
+.dialog-sign{display:inline-block;margin:0 auto 12px;padding:7px 14px;background:#24553e;border:4px solid #090e10;color:#fff0b4;font-size:18px}
+.dialog h2{margin:4px 0 8px;color:#ffe48a;font-size:24px}
+.dialog p{margin:7px 0;color:#e4eee8;font-size:14px;line-height:1.8}
+.start,.again{margin-top:12px;padding:12px 22px;border:4px solid #080d10;background:#d6a83e;color:#1b211f;box-shadow:inset 3px 3px #ffe79c,inset -3px -3px #9b7021;font-size:18px;cursor:pointer}
+.again{background:#458653;color:white;box-shadow:inset 3px 3px #76bb83,inset -3px -3px #285234}
+@media(max-width:420px){.shell{padding:12px 10px 24px}.hud{gap:5px}.hudbox strong{font-size:16px}.panel{padding:8px}.choice{font-size:17px}.rules p{font-size:12px}svg{min-height:205px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header><p class="kicker">OBSERVATION GAME</p><h1>🚪 ５番出口</h1><p class="subtitle">通路をよく見て、５番出口をめざそう！</p></header>
+<section class="hud" aria-label="ゲームの進みぐあい">
+ <div class="hudbox"><small>いまの出口</small><strong><span id="progressNum">0</span> / 5</strong></div>
+ <div class="hudbox"><small>ゴールまで</small><div class="dots" id="dots" aria-hidden="true"></div></div>
+ <div class="hudbox"><small>見つけた異変</small><strong id="foundCount">0</strong></div>
+</section>
+<section class="panel rules"><div class="rule-mark" aria-hidden="true">!</div><p><b>異変がなければ「すすむ」</b><br><b>異変があれば「もどる」</b><br>まちがえると、0番からやりなおし。</p></section>
+<section class="scene-wrap" aria-label="観察する地下通路">
+ <span class="scene-label" id="sceneLabel">通路を かんさつしよう</span>
+ <svg viewBox="0 0 640 390" role="img" aria-label="出口のある地下通路のイラスト">
+  <defs>
+   <linearGradient id="floorShade" x2="0" y2="1"><stop stop-color="#77756c"/><stop offset="1" stop-color="#373d3d"/></linearGradient>
+   <linearGradient id="hallLight" x2="0" y2="1"><stop stop-color="#fff1bd"/><stop offset="1" stop-color="#d4b96c"/></linearGradient>
+   <pattern id="tiles" width="42" height="28" patternUnits="userSpaceOnUse"><path d="M42 0H0V28" fill="none" stroke="#10191b" stroke-opacity=".22" stroke-width="2"/></pattern>
+  </defs>
+  <rect width="640" height="390" fill="#182528"/>
+  <polygon points="0,0 640,0 465,133 175,133" fill="#9caaa4"/>
+  <path d="M0 0 175 133V288L0 390Z" fill="#697774"/>
+  <path d="M640 0 465 133V288L640 390Z" fill="#737e79"/>
+  <polygon points="0,390 175,288 465,288 640,390" fill="url(#floorShade)"/>
+  <polygon points="0,0 640,0 465,133 175,133" fill="url(#tiles)"/>
+  <path d="M175 133H465V288H175Z" fill="#b9c1b7"/>
+  <path d="M193 145H447V288H193Z" fill="#a5b0a6"/>
+  <rect x="242" y="145" width="156" height="143" fill="#303c3a" stroke="#17201f" stroke-width="8"/>
+  <rect x="255" y="157" width="130" height="131" fill="#657469"/>
+  <path d="M255 157H385V288H255Z" fill="url(#hallLight)" opacity=".28"/>
+  <path d="M270 170H370V288H270Z" fill="#66736a" stroke="#434e48" stroke-width="4"/>
+  <circle cx="356" cy="231" r="5" fill="#e6cf8c"/>
+  <g id="signGroup">
+   <rect x="265" y="25" width="110" height="48" rx="2" fill="#153c31" stroke="#101a17" stroke-width="7"/>
+   <path d="M277 49h20m-8-8 8 8-8 8" fill="none" stroke="#e9e4c9" stroke-width="4"/>
+   <text x="327" y="57" text-anchor="middle" fill="#fff2bd" font-size="27" font-family="monospace">5</text>
+  </g>
+  <g id="lampGroup">
+   <path d="M300 104v12" stroke="#333e3a" stroke-width="5"/>
+   <rect x="270" y="112" width="60" height="12" rx="4" fill="#ffe9a6" stroke="#454841" stroke-width="4"/>
+   <ellipse cx="300" cy="131" rx="53" ry="13" fill="#fff1aa" opacity=".23"/>
+  </g>
+  <g id="posterGroup">
+   <rect x="53" y="176" width="62" height="78" fill="#384c4a" stroke="#202a29" stroke-width="5"/>
+   <rect x="60" y="183" width="48" height="64" fill="#e0d9bd"/>
+   <path d="M67 232 83 199l15 33Z" fill="#83a887"/>
+   <circle cx="83" cy="211" r="7" fill="#e5b969"/>
+  </g>
+  <g id="oddPoster" display="none">
+   <rect x="493" y="176" width="76" height="78" fill="#384c4a" stroke="#202a29" stroke-width="5"/>
+   <rect x="500" y="183" width="62" height="64" fill="#fff0bb"/>
+   <text x="531" y="230" text-anchor="middle" font-size="37">🌻</text>
+  </g>
+  <g id="floorMark">
+   <path d="M300 297 280 317m20-20 20 20" fill="none" stroke="#eee4c5" stroke-width="7" stroke-linecap="square"/>
+   <path d="M287 322h26" fill="none" stroke="#eee4c5" stroke-width="7"/>
+  </g>
+  <g id="doorOpen" display="none">
+   <path d="M270 170 223 187v101h47Z" fill="#46554b" stroke="#27342e" stroke-width="5"/>
+   <path d="M275 175 259 181v99l16 8Z" fill="#f6d881" opacity=".8"/>
+  </g>
+  <g id="exitSpark" opacity=".12">
+   <circle cx="320" cy="220" r="95" fill="url(#hallLight)"/>
+  </g>
+  <rect y="282" width="640" height="108" fill="url(#floorShade)" opacity=".16"/>
+ </svg><div class="scene-glow"></div>
+</section>
+<div class="message" id="message" role="status" aria-live="polite">「ゲームスタート」をおしてね。</div>
+<section class="choices" aria-label="進む方向">
+ <button class="choice forward" id="goButton" type="button" disabled>⬆️ すすむ<span>出口へ進む</span></button>
+ <button class="choice back" id="backButton" type="button" disabled>⬇️ もどる<span>来た道へ戻る</span></button>
+</section>
+<p class="footer">まわりをよく見て、あわてずにえらぼう。</p>
+</main>
+<div class="cover" id="cover">
+ <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+  <div class="dialog-sign">地下通路　出口 ５</div>
+  <h2 id="dialogTitle">５番出口をさがそう！</h2>
+  <p>通路をよく見てね。<br>いつもとちがうところがあったら、<b>もどる</b>。<br>なにもなければ、<b>すすむ</b>。</p>
+  <p>正しい道を５回えらぶとクリア！</p>
+  <button class="start" id="startButton" type="button">ゲームスタート</button>
+ </section>
+</div>
+<div class="cover" id="winCover" hidden>
+ <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="dialog-sign">出口 ５　到着！</div>
+  <h2 id="winTitle">🎉 だっしゅつ成功！</h2>
+  <p>通路の異変を見つけて、<br>５番出口までたどりついたよ！</p>
+  <button class="again" id="againButton" type="button">もういちど あそぶ</button>
+ </section>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const anomalyKinds=[
+ {id:"number",label:"看板の出口番号が６になっている"},
+ {id:"poster",label:"右のかべにひまわりのポスターがある"},
+ {id:"arrow",label:"ゆかの矢印が反対を向いている"},
+ {id:"lamp",label:"天井のライトが消えている"},
+ {id:"door",label:"出口のドアが開いている"},
+ {id:"sign",label:"出口の案内看板がない"}
+];
+let progress=0,found=0,room=null,playing=false;
+function drawDots(){ $("dots").innerHTML=Array.from({length:5},(_,i)=>'<i class="dot'+(i<progress?' on':'')+'"></i>').join('');$("progressNum").textContent=progress;$("foundCount").textContent=found}
+function setScene(kind){
+ $("exitNumber").textContent="5";
+ $("signGroup").setAttribute("display","inline");
+ $("oddPoster").setAttribute("display","none");
+ $("floorMark").setAttribute("transform","");
+ $("lampGroup").querySelector("rect").setAttribute("fill","#ffe9a6");
+ $("lampGroup").querySelector("ellipse").setAttribute("opacity",".23");
+ $("doorOpen").setAttribute("display","none");
+ if(kind==="number")$("exitNumber").textContent="6";
+ if(kind==="poster")$("oddPoster").setAttribute("display","inline");
+ if(kind==="arrow")$("floorMark").setAttribute("transform","rotate(180 300 309)");
+ if(kind==="lamp"){$("lampGroup").querySelector("rect").setAttribute("fill","#59615d");$("lampGroup").querySelector("ellipse").setAttribute("opacity","0")}
+ if(kind==="door")$("doorOpen").setAttribute("display","inline");
+ if(kind==="sign")$("signGroup").setAttribute("display","none");
+}
+function nextRoom(){
+ const hasAnomaly=Math.random()<.55;
+ const anomaly=hasAnomaly?anomalyKinds[Math.floor(Math.random()*anomalyKinds.length)]:null;
+ room={hasAnomaly,anomaly};
+ setScene(anomaly?anomaly.id:"normal");
+ $("sceneLabel").textContent="出口 "+progress+" 番の通路";
+}
+function setChoices(enabled){$("goButton").disabled=!enabled;$("backButton").disabled=!enabled}
+function start(){
+ progress=0;found=0;playing=true;drawDots();$("cover").hidden=true;$("winCover").hidden=true;setChoices(true);
+ $("message").textContent="通路をよく見て、すすむか もどるか えらぼう。";nextRoom()
+}
+function choose(direction){
+ if(!playing||!room)return;
+ const correct=room.hasAnomaly?direction==="back":direction==="go";
+ const detail=room.hasAnomaly?room.anomaly.label:"この通路に異変はなかったよ";
+ if(correct){
+  if(room.hasAnomaly)found++;
+  progress++;drawDots();
+  if(progress>=5){playing=false;setChoices(false);$("sceneLabel").textContent="出口 ５ に到着！";$("message").textContent="よく見つけたね！５番出口まであと少し！";$("winCover").hidden=false;return}
+  $("message").textContent=(room.hasAnomaly?"正解！異変を見つけたね。":"正解！異変はなかったよ。")+" "+detail+"。出口 "+progress+" 番へ進もう！";
+  nextRoom();return
+ }
+ const wasAnomaly=room.hasAnomaly;
+ progress=0;drawDots();
+ $("message").textContent=wasAnomaly?"あっ！異変があったよ。「"+detail+"」。0番からやりなおそう。":"ここには異変がなかったよ。もどると0番からやりなおし。";
+ nextRoom()
+}
+$("startButton").onclick=start;
+$("againButton").onclick=start;
+$("goButton").onclick=()=>choose("go");
+$("backButton").onclick=()=>choose("back");
+drawDots();
+</script>
+</body>
+</html>
