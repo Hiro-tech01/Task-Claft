@@ -39,6 +39,11 @@ svg{display:block;width:100%;height:auto;min-height:230px}
 .choice:focus-visible,.start:focus-visible,.again:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .forward{background:#397b50}.back{background:#455a70}
 .choice span{display:block;font-size:11px;color:#e5eee8}
+.continue-wrap{margin-top:10px}
+.continue-wrap[hidden]{display:none}
+.continue{width:100%;min-height:52px;padding:9px;border:4px solid #080d10;background:#d6a83e;color:#1b211f;box-shadow:inset 3px 3px #ffe79c,inset -3px -3px #9b7021;font-size:17px;cursor:pointer}
+.continue:active{transform:translateY(2px)}
+.continue:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .footer{text-align:center;color:#afc2ba;font-size:11px;margin-top:12px}
 .cover{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:18px;background:#091316dc}
 .cover[hidden]{display:none}
@@ -122,6 +127,7 @@ svg{display:block;width:100%;height:auto;min-height:230px}
  <button class="choice forward" id="goButton" type="button" disabled>⬆️ すすむ<span>出口へ進む</span></button>
  <button class="choice back" id="backButton" type="button" disabled>⬇️ もどる<span>来た道へ戻る</span></button>
 </section>
+<div class="continue-wrap" id="continueWrap" hidden><button class="continue" id="continueButton" type="button">つぎの通路へ ➜</button></div>
 <p class="footer">まわりをよく見て、あわてずにえらぼう。</p>
 </main>
 <div class="cover" id="cover">
@@ -174,6 +180,8 @@ function nextRoom(){
  room={hasAnomaly,anomaly};
  setScene(anomaly?anomaly.id:"normal");
  $("sceneLabel").textContent="出口 "+progress+" 番の通路";
+ $("continueWrap").hidden=true;
+ setChoices(true)
 }
 function setChoices(enabled){$("goButton").disabled=!enabled;$("backButton").disabled=!enabled}
 function start(){
@@ -184,20 +192,22 @@ function choose(direction){
  if(!playing||!room)return;
  const correct=room.hasAnomaly?direction==="back":direction==="go";
  const detail=room.hasAnomaly?room.anomaly.label:"この通路に異変はなかったよ";
+ setChoices(false);
  if(correct){
   if(room.hasAnomaly)found++;
   progress++;drawDots();
-  if(progress>=5){playing=false;setChoices(false);$("sceneLabel").textContent="出口 ５ に到着！";$("message").textContent="よく見つけたね！５番出口まであと少し！";$("winCover").hidden=false;return}
-  $("message").textContent=(room.hasAnomaly?"正解！異変を見つけたね。":"正解！異変はなかったよ。")+" "+detail+"。出口 "+progress+" 番へ進もう！";
-  nextRoom();return
+  if(progress>=5){playing=false;$("sceneLabel").textContent="出口 ５ に到着！";$("message").textContent="よく見つけたね！５番出口まであと少し！";$("winCover").hidden=false;return}
+  $("message").textContent=(room.hasAnomaly?"正解！異変を見つけたね。":"正解！異変はなかったよ。")+" "+detail+"。この通路を確認したら、つぎへ進もう！";
+  $("continueWrap").hidden=false;return
  }
  const wasAnomaly=room.hasAnomaly;
  progress=0;drawDots();
- $("message").textContent=wasAnomaly?"あっ！異変があったよ。「"+detail+"」。0番からやりなおそう。":"ここには異変がなかったよ。もどると0番からやりなおし。";
- nextRoom()
+ $("message").textContent=wasAnomaly?"あっ！異変があったよ。「"+detail+"」。この通路を見てから、0番でやりなおそう。":"ここには異変がなかったよ。この通路を見てから、0番でやりなおそう。";
+ $("continueWrap").hidden=false
 }
 $("startButton").onclick=start;
 $("againButton").onclick=start;
+$("continueButton").onclick=()=>{if(playing)nextRoom()};
 $("goButton").onclick=()=>choose("go");
 $("backButton").onclick=()=>choose("back");
 drawDots();
