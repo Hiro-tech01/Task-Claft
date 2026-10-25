@@ -181,7 +181,7 @@ function openPresetSettings(){
   const titleLabel=document.createElement('label');titleLabel.textContent='クエスト '+(i+1)+' の名前';
   const title=document.createElement('input');title.type='text';title.maxLength=40;title.value=p.t;title.dataset.presetTitle=String(i);titleLabel.appendChild(title);box.appendChild(titleLabel);
   const subLabel=document.createElement('label');subLabel.textContent='小さなチェック項目（1行に1つ。不要なら空欄）';
-  const sub=document.createElement('textarea');sub.value=(p.sub||[]).join('\\n');sub.placeholder='もちものチェック\\nじゅうでん';sub.dataset.presetSub=String(i);subLabel.appendChild(sub);box.appendChild(subLabel);
+  const sub=document.createElement('textarea');sub.value=(p.sub||[]).join('\n');sub.placeholder='もちものチェック\nじゅうでん';sub.dataset.presetSub=String(i);subLabel.appendChild(sub);box.appendChild(subLabel);
   root.appendChild(box);
  });
  $('presetDialog').hidden=false;
@@ -192,7 +192,7 @@ function savePresetSettings(){
  const subs=$('presetFields').querySelectorAll('[data-preset-sub]');
  PRESETS=DEFAULT_PRESETS.map((fallback,i)=>{
   const title=(titles[i]?.value||'').trim()||fallback.t;
-  const sub=(subs[i]?.value||'').split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean);
+  const sub=(subs[i]?.value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
   return {t:title,...(sub.length?{sub}:{})};
  });
  try{localStorage.setItem('bq_presets',JSON.stringify(PRESETS))}catch(e){toast('保存できませんでした',1400);return}
