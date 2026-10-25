@@ -241,7 +241,7 @@ $('in').onkeydown=e=>{if(e.key==='Enter')add()};
 PRESETS.forEach(p=>{const b=document.createElement('button');b.textContent=p.t;b.onclick=()=>addPreset(p);$('ch').appendChild(b)});
 const WPS=[{id:'w0',n:'つちのけん',e:'🪵',a:1,c:{dirt:5}},{id:'w1',n:'いしのけん',e:'🗡️',a:2,c:{stone:3}},{id:'w2',n:'てつのけん',e:'⚔️',a:4,c:{iron:3,stone:2}},{id:'w3',n:'きんのけん',e:'🔱',a:6,c:{gold:3,iron:2}},{id:'w4',n:'ダイヤのけん',e:'💎',a:10,c:{dia:2,gold:2}}];
 const ARMS=[{id:'a0',n:'つちのよろい',e:'🧥',g:1,c:{dirt:8}},{id:'a1',n:'いしのよろい',e:'🥋',g:2,c:{stone:6}},{id:'a2',n:'てつのよろい',e:'🛡️',g:3,c:{iron:5,stone:2}},{id:'a3',n:'きんのよろい',e:'✨',g:4,c:{gold:4,iron:2}},{id:'a4',n:'ダイヤのよろい',e:'💠',g:5,c:{dia:3,gold:2}}];
-const BOSS=[['🧟','ゾンビ'],['💀','スケルトン'],['🕷️','クモ'],['🟩','クリーパー'],['🕴️','エンダーマン'],['☠️','ウィザー'],['🐉','エンダードラゴン']];
+const BOSS=[['🧟','ゾンビ'],['💀','スケルトン'],['🕷️','クモ'],['🟩','クリーパー'],['🕴️','エンダーマン'],['☠️','ウィザー'],['🐉','エンダードラゴン'],['🟢','スライム'],['🔥','ブレイズ'],['👻','ガスト'],['🧙','ウィッチ'],['🏹','ピリジャー'],['🐡','ガーディアン'],['🐷','ピグリン'],['🌋','マグマキューブ'],['🟪','シュルカー'],['👹','ウォーデン']];
 let G=null;
 function renderCraft(){const e=$('craft');e.innerHTML='<div class="lv"><span>🔨 ぶきこうぼう</span></div>';
  WPS.forEach(w=>{const own=S.wp.includes(w.id),can=Object.keys(w.c).every(k=>(S.inv[k]||0)>=w.c[k]);
