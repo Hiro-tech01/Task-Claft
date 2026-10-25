@@ -142,7 +142,7 @@ let PRESETS=loadPresets();
 const XP_PER=10,LV_XP=50;
 let S={tasks:[],inv:{},xp:0,n:0,seq:1};
 try{const d=JSON.parse(localStorage.getItem('bq'));if(d)S=d}catch(e){}
-S.wp=S.wp||[];S.bk=S.bk||0;
+S.wp=S.wp||[];S.ar=S.ar||[];S.bk=S.bk||0;
 const hits={};
 const $=id=>document.getElementById(id);
 function updateClock(){
@@ -240,6 +240,7 @@ $('in').onkeydown=e=>{if(e.key==='Enter')add()};
 {const a=document.createElement('button');a.className='all';a.textContent='📋 きょうのクエストを ぜんぶセット';a.onclick=()=>PRESETS.forEach(addPreset);$('ch').appendChild(a)}
 PRESETS.forEach(p=>{const b=document.createElement('button');b.textContent=p.t;b.onclick=()=>addPreset(p);$('ch').appendChild(b)});
 const WPS=[{id:'w0',n:'つちのけん',e:'🪵',a:1,c:{dirt:5}},{id:'w1',n:'いしのけん',e:'🗡️',a:2,c:{stone:3}},{id:'w2',n:'てつのけん',e:'⚔️',a:4,c:{iron:3,stone:2}},{id:'w3',n:'きんのけん',e:'🔱',a:6,c:{gold:3,iron:2}},{id:'w4',n:'ダイヤのけん',e:'💎',a:10,c:{dia:2,gold:2}}];
+const ARMS=[{id:'a0',n:'つちのよろい',e:'🧥',g:1,c:{dirt:8}},{id:'a1',n:'いしのよろい',e:'🥋',g:2,c:{stone:6}},{id:'a2',n:'てつのよろい',e:'🛡️',g:3,c:{iron:5,stone:2}},{id:'a3',n:'きんのよろい',e:'✨',g:4,c:{gold:4,iron:2}},{id:'a4',n:'ダイヤのよろい',e:'💠',g:5,c:{dia:3,gold:2}}];
 const BOSS=[['🧟','ゾンビ'],['💀','スケルトン'],['🕷️','クモ'],['🟩','クリーパー'],['🕴️','エンダーマン'],['☠️','ウィザー'],['🐉','エンダードラゴン']];
 let G=null;
 function renderCraft(){const e=$('craft');e.innerHTML='<div class="lv"><span>🔨 ぶきこうぼう</span></div>';
@@ -250,12 +251,23 @@ function renderCraft(){const e=$('craft');e.innerHTML='<div class="lv"><span>�
   const b=document.createElement('button');
   if(own){b.textContent=S.eq===w.id?'そうびちゅう':'そうびする';b.onclick=()=>{S.eq=w.id;beep(500,.06);save();render()}}
   else{b.textContent=can?'つくる！':'ざいりょうが たりない';b.disabled=!can;b.onclick=()=>{Object.keys(w.c).forEach(k=>S.inv[k]-=w.c[k]);S.wp.push(w.id);S.eq=w.id;[500,700,900].forEach((f,i)=>setTimeout(()=>beep(f,.12,'triangle'),i*90));burst(innerWidth/2,innerHeight/2,'#ffd93a',20);toast(w.e+' '+w.n+' が できた！');save();render()}}
+  r.appendChild(b);e.appendChild(r)});
+ const heading=document.createElement('div');heading.className='lv';heading.style.marginTop='14px';heading.innerHTML='<span>🛡️ ぼうぐこうぼう</span>';e.appendChild(heading);
+ const current=ARMS.find(a=>a.id===S.ap);
+ const info=document.createElement('div');info.style.cssText='font-size:13px;color:#cfe;margin:0 0 6px';info.textContent='よろいを そうびすると、ボスのこうげきを うけにくくなるよ！'+(current?' そうび中：'+current.n:' そうび中：なし');e.appendChild(info);
+ ARMS.forEach(a=>{const own=S.ar.includes(a.id),can=Object.keys(a.c).every(k=>(S.inv[k]||0)>=a.c[k]);
+  const r=document.createElement('div');r.className='rc'+(S.ap===a.id?' eq':'');
+  const cost=Object.keys(a.c).map(k=>ITEMS.find(i=>i[0]===k)[1]+'×'+a.c[k]).join(' ');
+  r.innerHTML='<div>'+a.e+' '+a.n+'<small>まもり +'+a.g+'<br>'+cost+'</small></div>';
+  const b=document.createElement('button');
+  if(own){b.textContent=S.ap===a.id?'そうびちゅう':'そうびする';b.onclick=()=>{S.ap=a.id;beep(500,.06);save();render()}}
+  else{b.textContent=can?'つくる！':'ざいりょうが たりない';b.disabled=!can;b.onclick=()=>{Object.keys(a.c).forEach(k=>S.inv[k]-=a.c[k]);S.ar.push(a.id);S.ap=a.id;[500,700,900].forEach((f,i)=>setTimeout(()=>beep(f,.12,'triangle'),i*90));burst(innerWidth/2,innerHeight/2,'#4df0e6',20);toast(a.e+' '+a.n+' が できた！');save();render()}}
   r.appendChild(b);e.appendChild(r)})}
 function renderBoss(){const e=$('boss');e.innerHTML='';if(!S.br)return;const B=BOSS[S.bk%BOSS.length],b=document.createElement('button');b.className='bossbtn';b.textContent=B[0]+' ボスバトルへ！ '+B[1]+'が あらわれた！';b.onclick=startBattle;e.appendChild(b)}
-function startBattle(){const B=BOSS[S.bk%BOSS.length],w=WPS.find(x=>x.id===S.eq),m=20+8*S.bk;
- G={hp:m,max:m,h:5,t:0,B,a:w?w.a:1};
+function startBattle(){const B=BOSS[S.bk%BOSS.length],w=WPS.find(x=>x.id===S.eq),armor=ARMS.find(x=>x.id===S.ap),m=20+8*S.bk;
+ G={hp:m,max:m,h:5,t:0,B,a:w?w.a:1,guard:armor?armor.g:0};
  const o=$('bt');o.style.display='flex';
- o.innerHTML='<div>⚔️ ボスバトル！</div><div id="bimg">'+B[0]+'</div><div>'+B[1]+'</div><div class="bhp"><i id="bhp"></i></div><div id="hearts"></div><div id="dmg" style="min-height:26px"></div><div>'+(w?w.e+' '+w.n:'👊 すで')+'（こうげき '+G.a+'）</div><button id="batk">⚔️ こうげき！</button><div id="bmsg"></div><button class="b2" id="bx">にげる</button>';
+ o.innerHTML='<div>⚔️ ボスバトル！</div><div id="bimg">'+B[0]+'</div><div>'+B[1]+'</div><div class="bhp"><i id="bhp"></i></div><div id="hearts"></div><div id="dmg" style="min-height:26px"></div><div>'+(w?w.e+' '+w.n:'👊 すで')+'（こうげき '+G.a+'）<br>'+(armor?armor.e+' '+armor.n:'🧥 ぼうぐなし')+'（まもり +'+G.guard+'）</div><button id="batk">⚔️ こうげき！</button><div id="bmsg"></div><button class="b2" id="bx">にげる</button>';
  $('batk').onclick=atk;$('bx').onclick=()=>{o.style.display='none';G=null;render()};upd()}
 function upd(){$('bhp').style.width=G.hp/G.max*100+'%';$('hearts').textContent='❤️'.repeat(G.h)+'🖤'.repeat(5-G.h)}
 function atk(e){if(!G||G.h<=0||G.hp<=0)return;G.t++;const c=Math.random()<.2,d=G.a*(c?2:1);G.hp=Math.max(0,G.hp-d);
@@ -263,12 +275,12 @@ function atk(e){if(!G||G.h<=0||G.hp<=0)return;G.t++;const c=Math.random()<.2,d=G
  const im=$('bimg');im.classList.remove('hurt');void im.offsetWidth;im.classList.add('hurt');
  $('dmg').textContent=(c?'💥クリティカル！ ':'')+d+' ダメージ';
  if(G.hp<=0){upd();return win()}
- if(G.t%4==0){G.h--;beep(120,.2,'sawtooth');if(G.h<=0){upd();return lose()}}
+ if(G.t%(4+G.guard)==0){G.h--;beep(120,.2,'sawtooth');if(G.h<=0){upd();return lose()}}
  upd()}
 function win(){const ds=[drop(),drop(),drop()];ds.forEach(d=>gain(d));const old=Math.floor(S.xp/LV_XP);S.xp+=30;S.bk++;S.br=false;save();
  $('batk').style.display='none';$('bimg').textContent='💨';[660,880,1100,1320].forEach((f,i)=>setTimeout(()=>beep(f,.15,'triangle'),i*130));burst(innerWidth/2,innerHeight/3,'#ffd93a',30);
  $('bmsg').innerHTML='🎉 '+G.B[1]+'を たおした！<br>'+ds.map(d=>d[1]).join(' ')+' ＋30XP'+(Math.floor(S.xp/LV_XP)>old?'<br>⬆️ レベルアップ！':'');$('bx').textContent='もどる'}
 function lose(){$('batk').style.display='none';beep(100,.4,'sawtooth');
- $('bmsg').innerHTML='やられた…<br>ぶきを つよくして また ちょうせんしよう！<br><button class="b2" onclick="startBattle()">もういちど</button>';$('bx').textContent='もどる'}
+ $('bmsg').innerHTML='やられた…<br>ぶきや ぼうぐを つよくして また ちょうせんしよう！<br><button class="b2" onclick="startBattle()">もういちど</button>';$('bx').textContent='もどる'}
 render();
 </script></body></html>
